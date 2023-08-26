@@ -20,8 +20,6 @@ if (typeof limit !== "number") throw new Error("Invalid limit");
 
 const openai = new OpenAI({ apiKey, organization });
 
-const SIZE = 100;
-
 const getList = async (prompt) => {
   const response = await openai.chat.completions.create({
     model: "gpt-3.5-turbo-16k", //"gpt-4-0613", //"gpt-3.5-turbo-0613",
@@ -34,10 +32,15 @@ const getList = async (prompt) => {
 
   let json;
   let text = response.choices[0].message?.content || "";
-  const startIndex = text.indexOf("```json");
-  const endIndex = text.lastIndexOf("```");
-  if (startIndex > 0 && endIndex > startIndex)
-    text = text.substring(startIndex + 7, endIndex);
+  let startIndex = text.indexOf("```json");
+  startIndex = startIndex > 0 ? startIndex : text.indexOf("```");
+  startIndex = startIndex > 0 ? startIndex : text.indexOf("{");
+  let endIndex = text.lastIndexOf("```");
+  endIndex = endIndex > 0 ? endIndex : text.lastIndexOf("}");
+  if (startIndex > 0 && endIndex > startIndex) {
+    text = text.substring(startIndex, endIndex).trim();
+    text = text.substring(text.indexOf("{")).trim();
+  }
 
   try {
     json = JSON.parse(text);
@@ -56,24 +59,24 @@ const getList = async (prompt) => {
   return json;
 };
 
-async function generatePrompt(sentiment, response) {
-  const prompt = `List top ${SIZE} common ${sentiment} words in ${lang} language. Use same score format as AFINN-165, as much as you can.
-Output in JSON format: {"word": score, ...}.${
+async function generatePrompt(sentiment, size, response) {
+  const prompt = `List top ${size} common ${sentiment} words in ${lang} language. Use same score format as AFINN-165 (-5 to +5), avoid neutral words.
+As much as you are able. Output as JSON format: {"word": score, ...}.${
     response
       ? `
-Omit: ${Object.keys(response).slice(0, 50).join(",")}.`
+Omit: ${Object.keys(response).slice(0, size).join(",")}.`
       : ""
   }`;
 
   return prompt;
 }
 
-const generateList = async (sentiment) => {
-  const pages = Math.ceil(limit / SIZE) + 1;
+const generateList = async (sentiment, limit) => {
+  const pages = Math.ceil(limit / 50) + 1;
   let list = {};
   for (let i = 0; i < pages; i++) {
     console.log(`Generating ${sentiment} list ${i + 1}/${pages}`);
-    const prompt = await generatePrompt(sentiment, i === 0 ? null : list);
+    const prompt = await generatePrompt(sentiment, 50, i === 0 ? null : list);
     const response = await getList(prompt);
     list = { ...response, ...list };
     if (Object.keys(list).length >= limit) break;
@@ -96,11 +99,7 @@ const exists = async (path) => {
   }
 };
 
-async function generate() {
-  const positive = await generateList("positive");
-  const negative = await generateList("negative");
-
-  let list = { ...positive, ...negative };
+const writeList = async (list) => {
   const dir = join(__dirname, lang);
   if (!(await exists(dir))) await fs.mkdir(dir);
   const file = join(dir, "labels.json");
@@ -108,7 +107,28 @@ async function generate() {
     const existing = require(`./${lang}/labels.json`);
     list = { ...existing, ...list };
   }
+  list = Object.keys(list)
+    .sort()
+    .reduce((obj, key) => {
+      obj[key] = list[key];
+      return obj;
+    }, {});
   await fs.writeFile(file, JSON.stringify(list, null, 2));
+};
+
+async function generate() {
+  let positive = await generateList("positive verbs", limit / 2);
+  await writeList(positive);
+  positive = await generateList("positive adjectives", limit / 2);
+  await writeList(positive);
+  positive = await generateList("positive", limit);
+  await writeList(positive);
+  let negative = await generateList("negative verbs", limit / 2);
+  await writeList(negative);
+  negative = await generateList("negative adjectives", limit / 2);
+  await writeList(negative);
+  negative = await generateList("negative", limit);
+  await writeList(negative);
 }
 
 generate().then(() => console.log("Done"), console.error);

@@ -20,5 +20,5 @@ test("sentiment", (t) => {
     "Etanol răsturnat pe o șosea din județul Argeș, după un accident",
     { language: "ro" }
   );
-  t.is(result.score, 0);
+  t.is(result.score < 0, true);
 });
