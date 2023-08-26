@@ -7,8 +7,10 @@ Supported languages: `ro`.
 ## Usage
 
 ```js
-const sentiment = require("sentiment");
+const Sentiment = require("sentiment");
 const { locale, languages } = require("sentiment-locale");
+
+const sentiment = new Sentiment();
 
 sentiment.registerLanguage("ro", locale("ro"));
 const result = sentiment.analyze(

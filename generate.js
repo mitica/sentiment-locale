@@ -27,7 +27,7 @@ const getList = async (prompt) => {
     model: "gpt-3.5-turbo-16k", //"gpt-4-0613", //"gpt-3.5-turbo-0613",
     messages: [{ role: "user", content: prompt }],
     temperature: 0.7,
-    max_tokens: 10_000,
+    max_tokens: 14_000,
     n: 1
     // stop: STOP
   });
@@ -46,15 +46,23 @@ const getList = async (prompt) => {
     console.log(text);
     throw e;
   }
+  const keys = Object.keys(json);
+  if (keys.length && typeof json[keys[0]] !== "number") {
+    for (const key of keys) {
+      json[key] = parseInt(json[key], 10);
+    }
+  }
 
   return json;
 };
 
 async function generatePrompt(sentiment, response) {
-  const prompt = `List top ${SIZE} common ${sentiment} words in ${lang} language, similar to AFINN-165, as much as you can.
-Your output is only in JSON format: {"word": score, ...}.${
-    response ? `
-Avoid ${Object.keys(response).slice(0, 50).join(",")}.` : ""
+  const prompt = `List top ${SIZE} common ${sentiment} words in ${lang} language. Use same score format as AFINN-165, as much as you can.
+Output in JSON format: {"word": score, ...}.${
+    response
+      ? `
+Omit: ${Object.keys(response).slice(0, 50).join(",")}.`
+      : ""
   }`;
 
   return prompt;

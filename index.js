@@ -4,7 +4,7 @@ function locale(lang) {
   if (!LANGUAGES.includes(lang)) throw new Error("Unsupported language");
 
   return {
-    lables: require(`./${lang}/labels.json`),
+    labels: require(`./${lang}/labels.json`),
     scoringStrategy: require(`./${lang}/scoring-strategy`)
   };
 }
