@@ -2,7 +2,7 @@
 
 Languages for [sentiment](https://www.npmjs.com/package/sentiment).
 
-Supported languages: `ro`, `es`, `it`, `bg`, `cs`.
+Supported languages: `ro`, `es`, `it`, `bg`, `cs`, `hu`.
 
 ## Usage
 
