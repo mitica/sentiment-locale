@@ -633,6 +633,11 @@ js-yaml@^3.14.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
+language-name-map@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/language-name-map/-/language-name-map-0.3.0.tgz#a9cfc40180ba1c0e6876b4916cc9c0c04d0e711c"
+  integrity sha512-uoBHtfY6h4S2RoIpyqvQGhynX2hshQu/9S4ySbppGxG5VwEsiWZJ83xSjzx25Mb+Bmc+WxpQC0H54eNZVMWLuA==
+
 load-json-file@^7.0.0:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/load-json-file/-/load-json-file-7.0.1.tgz#a3c9fde6beffb6bedb5acf104fad6bb1604e1b00"

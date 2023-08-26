@@ -2,6 +2,7 @@ const minimist = require("minimist");
 const { OpenAI } = require("openai");
 const fs = require("fs/promises");
 const { join } = require("path");
+const { getLangNameFromCode } = require('language-name-map')
 
 require("dotenv").config();
 
@@ -60,7 +61,8 @@ const getList = async (prompt) => {
 };
 
 async function generatePrompt(sentiment, size, response) {
-  const prompt = `List top ${size} common ${sentiment} words in ${lang} language. Use same score format as AFINN-165 (-5 to +5), avoid neutral words.
+  const prompt = `List top ${size} common ${sentiment} words in ${getLangNameFromCode(lang).name}.
+Use same score format as AFINN-165 (-5 to +5), avoid neutral words.
 As much as you are able. Output as JSON format: {"word": score, ...}.${
     response
       ? `
