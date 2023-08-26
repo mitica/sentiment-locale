@@ -1,4 +1,4 @@
-const LANGUAGES = ["ro", "es"];
+const LANGUAGES = ["ro", "es", "it"];
 
 function locale(lang) {
   if (!LANGUAGES.includes(lang)) throw new Error("Unsupported language");
